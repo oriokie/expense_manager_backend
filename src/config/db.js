@@ -17,12 +17,6 @@ class DBClient {
     const uri = `mongodb://${host}:${port}/${database}`;
     this.client = null;
     this.db = null;
-
-    // initialize connection
-    this.client = new MongoClient(uri, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
   }
 
   /**
@@ -32,6 +26,11 @@ class DBClient {
    */
   async connect() {
     try {
+      // initialize connection
+      this.client = new MongoClient(this.uri, {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+      });
       await this.client.connect();
       console.log('Connected to MongoDB');
       this.db = this.client.db('expenses');
@@ -69,4 +68,7 @@ class DBClient {
   }
 }
 
-module.exports = DBClient;
+// create a new instance of the DBClient
+const dbClient = new DBClient();
+
+module.exports = dbClient;
