@@ -40,7 +40,6 @@ class RedisClient {
   async get(key) {
     return await this.getAsync(key);
   }
-
   /**
    * Sets a key-value pair in the Redis server
    * @param {string} key The key
