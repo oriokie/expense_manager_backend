@@ -66,3 +66,5 @@ class DBClient {
     return this.db;
   }
 }
+
+module.exports = DBClient;
