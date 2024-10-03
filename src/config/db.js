@@ -15,6 +15,8 @@ class DBClient {
     const port = process.env.DB_PORT || '27017';
     const database = process.env.DB_DATABASE || 'expenses';
     const uri = `mongodb://${host}:${port}/${database}`;
+    this.client = null;
+    this.db = null;
 
     // initialize connection
     this.client = new MongoClient(uri, {

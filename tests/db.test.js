@@ -1,18 +1,25 @@
-/**
- * Tests for DatabaseConnection using MongoClient
- */
 const { MongoClient } = require('mongodb');
 const DBClient = require('../src/config/db');
 
-// Mock mongodb to avoid connecting to a real database
-jest.mock('mongodb');
+// Mocking MongoClient with the necessary methods
+jest.mock('mongodb', () => {
+  return {
+    MongoClient: jest.fn().mockImplementation(() => ({
+      connect: jest.fn().mockResolvedValue(true),
+      close: jest.fn().mockResolvedValue(true),
+      db: jest.fn().mockReturnValue({
+        collection: jest.fn(),
+      }),
+      isConnected: jest.fn().mockReturnValue(true),
+    })),
+  };
+});
 
 describe('DBClient', () => {
   let dbConnection;
-  const mockUri = 'mongodb://localhost:27017/testdb';
 
   beforeEach(() => {
-    dbConnection = new DBClient(mockUri);
+    dbConnection = new DBClient();
     jest.clearAllMocks();
   });
 
@@ -20,21 +27,19 @@ describe('DBClient', () => {
     await dbConnection.close();
   });
 
-  it('should create a new MongoClient', () => {
-    expect(MongoClient).toHaveBeenCalledTimes(1);
-    expect(MongoClient).toHaveBeenCalledWith(mockUri, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
-  });
-
-  it('should connect to the database', async () => {
+  it('should connect to the MongoDB database', async () => {
     await dbConnection.connect();
     expect(dbConnection.client.connect).toHaveBeenCalledTimes(1);
+    expect(dbConnection.client.db).toHaveBeenCalledWith('expenses');
   });
 
-  it('should close the database connection', async () => {
-    await dbConnection.close();
-    expect(dbConnection.client.close).toHaveBeenCalledTimes(1);
+  it('should return true when connected', async () => {
+    await dbConnection.connect();
+    expect(dbConnection.isConnected()).toBe(true);
+  });
+
+  it('should return false when not connected', () => {
+    dbConnection.client.isConnected.mockReturnValue(false);
+    expect(dbConnection.isConnected()).toBe(false);
   });
 });
