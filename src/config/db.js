@@ -13,8 +13,8 @@ class DBClient {
   constructor() {
     const host = process.env.DB_HOST || 'localhost';
     const port = process.env.DB_PORT || '27017';
-    const database = process.env.DB_DATABASE || 'expenses';
-    const uri = `mongodb://${host}:${port}/${database}`;
+    const database = process.env.DB_DATABASE || 'EXPENSES_MANAGER';
+    this.uri = `mongodb://${host}:${port}/${database}`;
     this.client = null;
     this.db = null;
   }
@@ -26,14 +26,12 @@ class DBClient {
    */
   async connect() {
     try {
+      console.log(`Connecting to MongoDB at ${this.uri}`);
       // initialize connection
-      this.client = new MongoClient(this.uri, {
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
-      });
+      this.client = new MongoClient(this.uri);
       await this.client.connect();
       console.log('Connected to MongoDB');
-      this.db = this.client.db('expenses');
+      this.db = this.client.db(this.database);
     } catch (err) {
       console.error(`Error connecting to MongoDB: ${err.message}`);
       throw err;
@@ -65,6 +63,15 @@ class DBClient {
    */
   getDB() {
     return this.db;
+  }
+
+  /**
+   * Gets the users collection.
+   * @returns {Collection}
+   */
+  async getUsersCollection() {
+    if (!this.db) await this.connect(); // Ensure DB is connected
+    return this.db.collection('users');
   }
 }
 

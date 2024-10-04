@@ -26,7 +26,11 @@ class AuthController {
       return res.status(400).json({ error: 'Missing Password' });
     }
 
-    const existingUser = await dbClient.getDB().collection('users').findOne({ email });
+    // Use the usersCollection method to get the users collection
+    const usersCollection = await dbClient.getUsersCollection();
+
+    const existingUser = await usersCollection.findOne({ email });
+
     if (existingUser) {
       return res.status(400).json({ error: 'User already exists' });
     }
