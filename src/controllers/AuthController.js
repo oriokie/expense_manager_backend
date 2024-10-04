@@ -15,9 +15,13 @@ class AuthController {
    * Registers a new user
    * @param {Object} req The request object
    * @param {Object} res The response object
+   * return {Object} The response object
    */
   async register(req, res) {
-    const { email, password } = req.body;
+    const { name, email, password } = req.body;
+    if (!name) {
+      return res.status(400).json({ error: 'The Name Missing' });
+    }
     if (!email) {
       return res.status(400).json({ error: 'Missing email' });
     }
@@ -39,13 +43,24 @@ class AuthController {
     const userId = uuidv4();
     const user = {
       userId,
+      name,
       email,
       password: hashedPassword,
+      createdAt: new Date().toISOString(),
     };
 
     await dbClient.getDB().collection('users').insertOne(user);
 
-    return res.status(201).json({ userId, email });
+    return res.status(201).json({ userId, name, email, createdAt: user.createdAt });
+  }
+
+  /**
+   * Logins in a user
+   */
+  static async login(req, res) {
+    const token = crypto.randomBytes(16).toString('hex');
+    await redisClient.set(`auth_${token}`, req.user._id.toString(), 86400);
+    res.json({ token });
   }
 }
 
