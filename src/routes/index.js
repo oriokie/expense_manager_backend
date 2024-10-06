@@ -15,7 +15,11 @@ const router = express.Router();
 router.post('/register', AuthController.register);
 router.post('/login', AuthMiddleware.authenticateUser, AuthController.login);
 router.post('/logout', AuthMiddleware.authenticateToken, AuthController.logout);
-router.post('/categories', AuthMiddleware.authenticateToken, CategoryController.create);
-router.get('/categories', AuthMiddleware.authenticateToken, CategoryController.getAll);
+router.post(
+  '/categories/seed',
+  AuthMiddleware.authenticateToken,
+  CategoryController.seedCategories
+);
+router.get('/categories', AuthMiddleware.authenticateToken, CategoryController.getCategories);
 
 module.exports = router;

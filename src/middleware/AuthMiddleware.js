@@ -76,8 +76,6 @@ class AuthMiddleware {
 
     req.user = user;
 
-    console.log(user);
-
     // Continue to the next middleware
     next();
   }
