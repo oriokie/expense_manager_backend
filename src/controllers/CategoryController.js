@@ -14,13 +14,13 @@ class CategoryController {
     { name: 'Food', description: 'Expenses related to food and dining.' },
     { name: 'Transportation', description: 'Expenses related to transport.' },
     { name: 'Housing', description: 'Expenses for housing or rent.' },
-    { name: 'Utilities', description: 'Expenses for utilities such as water and electricity' },
-    { name: 'Health', description: 'Medical expenses and health-related costs.' },
-    { name: 'Entertainment', description: 'Expenses for entertainment and leisure' },
-    { name: 'Groceries', description: 'Expenses for purchasing groceries.' },
-    { name: 'Education', description: 'Expenses for educational purposes.' },
-    { name: 'Clothing', description: 'Expenses for clothing and personal items.' },
-    { name: 'Miscellaneous', description: 'Other miscellaneous expenses.' },
+    //{ name: 'Utilities', description: 'Expenses for utilities such as water and electricity' },
+    //{ name: 'Health', description: 'Medical expenses and health-related costs.' },
+    //{ name: 'Entertainment', description: 'Expenses for entertainment and leisure' },
+    //{ name: 'Groceries', description: 'Expenses for purchasing groceries.' },
+    //{ name: 'Education', description: 'Expenses for educational purposes.' },
+    //{ name: 'Clothing', description: 'Expenses for clothing and personal items.' },
+    //{ name: 'Miscellaneous', description: 'Other miscellaneous expenses.' },
   ];
 
   /**
@@ -31,14 +31,21 @@ class CategoryController {
       const categoriesCollection = await dbClient.getCategoriesCollection();
 
       // check if categories exist
-      const existingCategories = await categoriesCollection.find().toArray();
+      const existingCategories = await categoriesCollection
+        .find({ userId: req.user._id })
+        .toArray();
 
       if (existingCategories.length > 0) {
         return res.status(400).json({ error: 'Categories already exist' });
       }
 
+      const userCategories = CategoryController.templateCategories.map((category) => ({
+        ...category,
+        userId: req.user._id,
+      }));
+
       // insert template categories
-      await categoriesCollection.insertMany(CategoryController.templateCategories);
+      await categoriesCollection.insertMany(userCategories);
 
       return res.status(201).json({ message: 'Categories created successfully' });
     } catch (error) {
@@ -53,8 +60,7 @@ class CategoryController {
   static async getCategories(req, res) {
     try {
       const categoriesCollection = await dbClient.getCategoriesCollection();
-      const categories = await categoriesCollection.find().toArray();
-
+      const categories = await categoriesCollection.find({ userId: req.user._id }).toArray();
       return res.status(200).json({ categories });
     } catch (error) {
       console.error('Error getting categories:', error);
@@ -76,7 +82,7 @@ class CategoryController {
       }
 
       const categoriesCollection = await dbClient.getCategoriesCollection();
-      const existingCategory = await categoriesCollection.findOne({ name });
+      const existingCategory = await categoriesCollection.findOne({ name, userId: req.user._id });
 
       if (existingCategory) {
         return res.status(400).json({ error: 'Category already exists' });
@@ -85,6 +91,7 @@ class CategoryController {
       const newCategory = {
         name,
         description,
+        userId: req.user._id,
       };
 
       await categoriesCollection.insertOne(newCategory);
@@ -110,6 +117,7 @@ class CategoryController {
       const categoriesCollection = await dbClient.getCategoriesCollection();
       const deletedCategory = await categoriesCollection.findOneAndDelete({
         _id: new ObjectId(id),
+        userId: req.user._id,
       });
 
       if (!deletedCategory) {
@@ -144,7 +152,7 @@ class CategoryController {
 
       const categoriesCollection = await dbClient.getCategoriesCollection();
       const result = await categoriesCollection.updateOne(
-        { _id: new ObjectId(id) },
+        { _id: new ObjectId(id), userId: req.user._id },
         { $set: { name, description } }
       );
 
