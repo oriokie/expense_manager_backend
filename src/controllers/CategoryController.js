@@ -60,6 +60,61 @@ class CategoryController {
       return res.status(500).json({ error: 'Internal server error' });
     }
   }
+
+  /**
+   * Method to add a new category
+   */
+  static async addCategory(req, res) {
+    try {
+      const { name, description } = req.body;
+      if (!name) {
+        return res.status(400).json({ error: 'Missing name' });
+      }
+      if (!description) {
+        return res.status(400).json({ error: 'Missing description' });
+      }
+
+      const categoriesCollection = await dbClient.getCategoriesCollection();
+      const existingCategory = await categoriesCollection.findOne({ name });
+
+      if (existingCategory) {
+        return res.status(400).json({ error: 'Category already exists' });
+      }
+
+      const newCategory = {
+        name,
+        description,
+      };
+
+      await categoriesCollection.insertOne(newCategory);
+
+      return res.status(201).json({ message: 'Category created successfully' });
+    } catch (error) {
+      console.error('Error creating category:', error);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+
+  /**
+   * Method to remove a category
+   */
+  static async removeCategory(req, res) {
+    const { id } = req.params;
+
+    try {
+      const categoriesCollection = await dbClient.getCategoriesCollection();
+      const deletedCategory = await categoriesCollection.findOneAndDelete({ _id: ObjectId(id) });
+
+      if (!deletedCategory.value) {
+        return res.status(404).json({ error: 'Category not found' });
+      }
+
+      return res.status(200).json({ message: 'Category deleted successfully' });
+    } catch (error) {
+      console.error('Error removing category:', error);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+  }
 }
 
 module.exports = CategoryController;
