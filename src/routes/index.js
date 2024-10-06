@@ -21,5 +21,12 @@ router.post(
   CategoryController.seedCategories
 );
 router.get('/categories', AuthMiddleware.authenticateToken, CategoryController.getCategories);
+router.post('/categories', AuthMiddleware.authenticateToken, CategoryController.addCategory);
+router.delete(
+  '/categories/:id',
+  AuthMiddleware.authenticateToken,
+  CategoryController.removeCategory
+);
+router.put('/categories/:id', AuthMiddleware.authenticateToken, CategoryController.updateCategory);
 
 module.exports = router;

@@ -3,6 +3,7 @@
  */
 
 const dbClient = require('../config/db');
+const { ObjectId } = require('mongodb');
 
 /**
  * Class representing a category controller
@@ -102,16 +103,22 @@ class CategoryController {
     const { id } = req.params;
 
     try {
-      const categoriesCollection = await dbClient.getCategoriesCollection();
-      const deletedCategory = await categoriesCollection.findOneAndDelete({ _id: ObjectId(id) });
+      if (!ObjectId.isValid(id)) {
+        return res.status(400).json({ error: 'Invalid category ID' });
+      }
 
-      if (!deletedCategory.value) {
+      const categoriesCollection = await dbClient.getCategoriesCollection();
+      const deletedCategory = await categoriesCollection.findOneAndDelete({
+        _id: new ObjectId(id),
+      });
+
+      if (!deletedCategory) {
         return res.status(404).json({ error: 'Category not found' });
       }
 
       return res.status(200).json({ message: 'Category deleted successfully' });
     } catch (error) {
-      console.error('Error removing category:', error);
+      console.error('Error removing category:', error.message, error.stack);
       return res.status(500).json({ error: 'Internal server error' });
     }
   }
@@ -129,21 +136,25 @@ class CategoryController {
     if (!description) {
       return res.status(400).json({ error: 'Missing description' });
     }
+
     try {
+      if (!ObjectId.isValid(id)) {
+        return res.status(400).json({ error: 'Invalid category ID' });
+      }
+
       const categoriesCollection = await dbClient.getCategoriesCollection();
-      const updatedCategory = await categoriesCollection.findOneAndUpdate(
-        { _id: ObjectId(id) },
-        { $set: { name, description } },
-        { returnDocument: 'after' }
+      const result = await categoriesCollection.updateOne(
+        { _id: new ObjectId(id) },
+        { $set: { name, description } }
       );
 
-      if (!updatedCategory.value) {
+      if (result.matchedCount === 0) {
         return res.status(404).json({ error: 'Category not found' });
       }
 
       return res.status(200).json({ message: 'Category updated successfully' });
     } catch (error) {
-      console.error('Error updating category:', error);
+      console.error('Error updating category:', error.message, error.stack);
       return res.status(500).json({ error: 'Internal server error' });
     }
   }
