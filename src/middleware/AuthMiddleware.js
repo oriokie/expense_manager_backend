@@ -79,4 +79,4 @@ class AuthMiddleware {
   }
 }
 
-module.exports = AuthMiddleware;
+module.exports = new AuthMiddleware();
