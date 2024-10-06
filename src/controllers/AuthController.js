@@ -39,7 +39,7 @@ class AuthController {
       return res.status(400).json({ error: 'User already exists' });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await AuthController.hashPassword(password);
     const userId = uuidv4();
     const user = {
       userId,
@@ -49,7 +49,7 @@ class AuthController {
       createdAt: new Date().toISOString(),
     };
 
-    await dbClient.getDB().collection('users').insertOne(user);
+    await usersCollection.insertOne(user);
 
     return res.status(201).json({ userId, name, email, createdAt: user.createdAt });
   }
@@ -61,6 +61,22 @@ class AuthController {
     const token = crypto.randomBytes(16).toString('hex');
     await redisClient.set(`auth_${token}`, req.user._id.toString(), 86400);
     res.json({ token });
+  }
+
+  /**
+   * Logs out a user
+   */
+  static async logout(req, res) {
+    const token = req.headers.authorization.split(' ')[1];
+    await redisClient.del(`auth_${token}`);
+    res.status(204).json({ message: 'Logout successful' });
+  }
+
+  /**
+   * hash password
+   */
+  static async hashPassword(password) {
+    return bcrypt.hash(password, 10);
   }
 }
 
