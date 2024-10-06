@@ -73,6 +73,11 @@ class DBClient {
     if (!this.db) await this.connect(); // Ensure DB is connected
     return this.db.collection('users');
   }
+
+  async getCategoriesCollection() {
+    if (!this.db) await this.connect(); // Ensure DB is connected
+    return this.db.collection('categories');
+  }
 }
 
 // create a new instance of the DBClient
