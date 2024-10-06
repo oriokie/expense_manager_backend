@@ -1,7 +1,9 @@
 const basicAuth = require('basic-auth');
 const dbClient = require('../config/db');
 const redisClient = require('../config/redis');
-const AuthController = require('../controllers/AuthController');
+const AuthController = require('../controllers/AuthController.js');
+const bcrypt = require('bcrypt');
+const { ObjectId } = require('mongodb');
 
 /**
  * Middleware to authenticate a user
@@ -15,25 +17,25 @@ class AuthMiddleware {
    * - If the password is incorrect, the user is not authenticated
    */
   static async authenticateUser(req, res, next) {
-    // Extract the email and password from the Authorization header
-    const credentials = basicAuth(req);
+    // Get the credentials from the request body
+    const { email, password } = req.body;
 
-    if (!credentials) {
-      return res.status(401).json({ error: 'Unauthorized' });
+    if (!email || !password) {
+      return res.status(401).json({ error: 'Missing email or password' });
     }
-
-    // Get the email and password
-    const { name: email, pass: password } = credentials;
-
-    // Hash the password
-    const hashedPassword = await AuthController.hashPassword(password);
 
     // initialize db client
     const usersCollection = await dbClient.getUsersCollection();
-    const user = await usersCollection.findOne({ email, password: hashedPassword });
+    const user = await usersCollection.findOne({ email });
 
     if (!user) {
-      return res.status(401).json({ error: 'Unauthorized' });
+      return res.status(401).json({ error: 'Unauthorized: User not found' });
+    }
+
+    const isPasswordCorrect = await bcrypt.compare(password, user.password);
+
+    if (!isPasswordCorrect) {
+      return res.status(401).json({ error: 'Unauthorized: Password is incorrect' });
     }
 
     req.user = user;
@@ -50,8 +52,8 @@ class AuthMiddleware {
    * - If the token is invalid, the user is not authenticated
    */
   static async authenticateToken(req, res, next) {
-    // get the tome from the Authorization header
-    const token = req.header('x-token');
+    // Get the token from the Authorization header
+    const token = req.header('Authorization')?.split(' ')[1];
 
     if (!token) {
       return res.status(401).json({ error: 'Unauthorized' });
@@ -66,7 +68,7 @@ class AuthMiddleware {
 
     // get the user from the database
     const usersCollection = await dbClient.getUsersCollection();
-    const user = await usersCollection.findOne({ _id: ObjectId(userId) });
+    const user = await usersCollection.findOne({ _id: new ObjectId(userId) });
 
     if (!user) {
       return res.status(401).json({ error: 'Unauthorized' });
@@ -74,9 +76,11 @@ class AuthMiddleware {
 
     req.user = user;
 
+    console.log(user);
+
     // Continue to the next middleware
     next();
   }
 }
 
-module.exports = new AuthMiddleware();
+module.exports = AuthMiddleware;

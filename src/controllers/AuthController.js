@@ -15,9 +15,9 @@ class AuthController {
    * Registers a new user
    * @param {Object} req The request object
    * @param {Object} res The response object
-   * return {Object} The response object
+   * @return {Object} The response object
    */
-  async register(req, res) {
+  static async register(req, res) {
     const { name, email, password } = req.body;
     if (!name) {
       return res.status(400).json({ error: 'The Name Missing' });
@@ -25,14 +25,11 @@ class AuthController {
     if (!email) {
       return res.status(400).json({ error: 'Missing email' });
     }
-
     if (!password) {
       return res.status(400).json({ error: 'Missing Password' });
     }
 
-    // Use the usersCollection method to get the users collection
     const usersCollection = await dbClient.getUsersCollection();
-
     const existingUser = await usersCollection.findOne({ email });
 
     if (existingUser) {
@@ -55,7 +52,10 @@ class AuthController {
   }
 
   /**
-   * Logins in a user
+   * Logs in a user
+   * @param {Object} req The request object
+   * @param {Object} res The response object
+   * @return {Object} The response object
    */
   static async login(req, res) {
     const token = crypto.randomBytes(16).toString('hex');
@@ -65,19 +65,24 @@ class AuthController {
 
   /**
    * Logs out a user
+   * @param {Object} req The request object
+   * @param {Object} res The response object
+   * @return {Object} The response object
    */
   static async logout(req, res) {
     const token = req.headers.authorization.split(' ')[1];
     await redisClient.del(`auth_${token}`);
-    res.status(204).json({ message: 'Logout successful' });
+    res.status(200).json({ message: 'Logout successful' });
   }
 
   /**
-   * hash password
+   * Hash password
+   * @param {string} password The password to hash
+   * @return {string} The hashed password
    */
   static async hashPassword(password) {
     return bcrypt.hash(password, 10);
   }
 }
 
-module.exports = new AuthController();
+module.exports = AuthController;
