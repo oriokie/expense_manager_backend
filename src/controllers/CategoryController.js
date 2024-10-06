@@ -115,6 +115,38 @@ class CategoryController {
       return res.status(500).json({ error: 'Internal server error' });
     }
   }
+
+  /**
+   * Method to update a category
+   */
+  static async updateCategory(req, res) {
+    const { id } = req.params;
+    const { name, description } = req.body;
+
+    if (!name) {
+      return res.status(400).json({ error: 'Missing name' });
+    }
+    if (!description) {
+      return res.status(400).json({ error: 'Missing description' });
+    }
+    try {
+      const categoriesCollection = await dbClient.getCategoriesCollection();
+      const updatedCategory = await categoriesCollection.findOneAndUpdate(
+        { _id: ObjectId(id) },
+        { $set: { name, description } },
+        { returnDocument: 'after' }
+      );
+
+      if (!updatedCategory.value) {
+        return res.status(404).json({ error: 'Category not found' });
+      }
+
+      return res.status(200).json({ message: 'Category updated successfully' });
+    } catch (error) {
+      console.error('Error updating category:', error);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+  }
 }
 
 module.exports = CategoryController;
