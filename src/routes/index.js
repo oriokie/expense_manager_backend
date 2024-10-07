@@ -35,5 +35,6 @@ router.put('/categories/:id', AuthMiddleware.authenticateToken, CategoryControll
 // Expenses routes
 router.post('/expenses', AuthMiddleware.authenticateToken, ExpenseController.addExpense);
 router.get('/expenses', AuthMiddleware.authenticateToken, ExpenseController.getExpenses);
+router.put('/expenses/:id', AuthMiddleware.authenticateToken, ExpenseController.updateExpense);
 
 module.exports = router;
