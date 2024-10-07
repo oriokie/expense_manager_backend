@@ -7,6 +7,7 @@ const express = require('express');
 const AuthController = require('../controllers/AuthController');
 const AuthMiddleware = require('../middleware/AuthMiddleware');
 const CategoryController = require('../controllers/CategoryController');
+const ExpenseController = require('../controllers/ExpenseController');
 
 // Create the router
 const router = express.Router();
@@ -15,6 +16,8 @@ const router = express.Router();
 router.post('/register', AuthController.register);
 router.post('/login', AuthMiddleware.authenticateUser, AuthController.login);
 router.post('/logout', AuthMiddleware.authenticateToken, AuthController.logout);
+
+// Categories
 router.post(
   '/categories/seed',
   AuthMiddleware.authenticateToken,
@@ -28,5 +31,9 @@ router.delete(
   CategoryController.removeCategory
 );
 router.put('/categories/:id', AuthMiddleware.authenticateToken, CategoryController.updateCategory);
+
+// Expenses routes
+router.post('/expenses', AuthMiddleware.authenticateToken, ExpenseController.addExpense);
+router.get('/expenses', AuthMiddleware.authenticateToken, ExpenseController.getExpenses);
 
 module.exports = router;

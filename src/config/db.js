@@ -70,13 +70,18 @@ class DBClient {
    * @returns {Collection}
    */
   async getUsersCollection() {
-    if (!this.db) await this.connect(); // Ensure DB is connected
+    if (!this.db) await this.connect();
     return this.db.collection('users');
   }
 
   async getCategoriesCollection() {
-    if (!this.db) await this.connect(); // Ensure DB is connected
+    if (!this.db) await this.connect();
     return this.db.collection('categories');
+  }
+
+  async getExpensesCollection() {
+    if (!this.db) await this.connect();
+    return this.db.collection('expenses');
   }
 }
 
