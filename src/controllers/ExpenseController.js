@@ -13,7 +13,7 @@ class ExpenseController {
    */
   static async addExpense(req, res) {
     try {
-      const { amount, description, date, categoryId, isRecurring, recurringPeriod } = req.body;
+      const { amount, description, date, categoryId } = req.body;
       if (!amount) {
         return res.status(400).json({ error: 'Missing amount' });
       }
@@ -47,8 +47,6 @@ class ExpenseController {
         description,
         date: new Date(date),
         categoryId: new ObjectId(categoryId),
-        isRecurring: isRecurring || false,
-        recurringPeriod: recurringPeriod || null,
         createdAt: new Date(),
       };
 
