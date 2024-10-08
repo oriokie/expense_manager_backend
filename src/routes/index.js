@@ -16,6 +16,7 @@ const router = express.Router();
 router.post('/register', AuthController.register);
 router.post('/login', AuthMiddleware.authenticateUser, AuthController.login);
 router.post('/logout', AuthMiddleware.authenticateToken, AuthController.logout);
+router.get('/users', AuthMiddleware.authenticateToken, AuthController.getUsers);
 
 // Categories
 router.post(

@@ -83,6 +83,26 @@ class AuthController {
   static async hashPassword(password) {
     return bcrypt.hash(password, 10);
   }
+
+  /**
+   * Retrieves all users
+   */
+  static async getUsers(req, res) {
+    try {
+      const usersCollection = await dbClient.getUsersCollection();
+      const users = await usersCollection.find().toArray();
+
+      //remove password from response
+      users.forEach((user) => {
+        delete user.password;
+      });
+
+      return res.status(200).json({ users });
+    } catch (error) {
+      console.error('Error getting users:', error);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+  }
 }
 
 module.exports = AuthController;
