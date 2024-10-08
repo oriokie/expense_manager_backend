@@ -42,5 +42,10 @@ router.get(
   AuthMiddleware.authenticateToken,
   ExpenseController.getExpenseAnalytics
 );
+router.get(
+  '/expenses/monthly',
+  AuthMiddleware.authenticateToken,
+  ExpenseController.getMonthlyExpenses
+);
 
 module.exports = router;

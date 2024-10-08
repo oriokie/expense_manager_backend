@@ -210,6 +210,58 @@ class ExpenseController {
       return res.status(500).json({ error: 'Internal server error' });
     }
   }
+  static async getMonthlyExpenses(req, res) {
+    try {
+      const expensesCollection = await dbClient.getExpensesCollection();
+      const { year: queryYear } = req.query;
+
+      // Use current year if no year is provided
+      const year = queryYear ? parseInt(queryYear, 10) : new Date().getFullYear();
+
+      // Match expenses by the given year
+      // Set the start and end of the year in UTC to avoid time zone issues
+      const start = new Date(`${year}-01-01T00:00:00.000Z`); // January 1st of the specified year in UTC
+      const end = new Date(`${year}-12-31T23:59:59.999Z`); // December 31st of the specified year in UTC
+
+      // Generate array of months for the year
+      const months = Array.from(
+        { length: 12 },
+        (_, i) => `${year}-${String(i + 1).padStart(2, '0')}`
+      );
+
+      // Create a match query for the year
+      const matchQuery = {
+        userId: req.user._id,
+        date: { $gte: start, $lt: end },
+      };
+
+      // Perform the aggregation
+      const pipeline = [
+        { $match: matchQuery },
+        {
+          $group: {
+            _id: { $dateToString: { format: '%Y-%m', date: '$date' } }, // Group by year-month (YYYY-MM)
+            totalAmount: { $sum: '$amount' },
+          },
+        },
+        { $sort: { _id: 1 } },
+      ];
+
+      const results = await expensesCollection.aggregate(pipeline).toArray();
+      console.log('Aggregation Results:', results); // Log results for debugging
+
+      // Map results to a monthly total with zero for missing months
+      const monthlyExpenses = months.map((month) => ({
+        month,
+        totalAmount: results.find((result) => result._id === month)?.totalAmount || 0,
+      }));
+
+      return res.status(200).json({ monthlyExpenses });
+    } catch (error) {
+      console.error('Error getting monthly expenses:', error);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+  }
 }
 
 module.exports = ExpenseController;
