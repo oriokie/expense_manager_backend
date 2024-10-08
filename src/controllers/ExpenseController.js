@@ -87,7 +87,11 @@ class ExpenseController {
    */
   static async updateExpense(req, res) {
     try {
+      const { id } = req.params;
       const { amount, description, date, categoryId } = req.body;
+      if (!id) {
+        return res.status(400).json({ error: 'Missing expense ID' });
+      }
       if (!amount) {
         return res.status(400).json({ error: 'Missing amount' });
       }
@@ -123,16 +127,86 @@ class ExpenseController {
         updatedAt: new Date(),
       };
 
-      await expensesCollection.updateOne(
-        { _id: new ObjectId(req.param.id), userId: req.user._id },
+      const result = await expensesCollection.updateOne(
+        { _id: new ObjectId(id), userId: req.user._id },
         { $set: updatedExpense }
       );
 
+      if (result.matchedCount === 0) {
+        return res.status(404).json({ error: 'Expense not found' });
+      }
       return res
         .status(200)
         .json({ message: 'Expense updated successfully', expense: updatedExpense });
     } catch (error) {
       console.error('Error updating expense:', error);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+
+  /**
+   * Method to delete an expense
+   */
+  static async deleteExpense(req, res) {
+    try {
+      const { id } = req.params;
+      if (!id) {
+        return res.status(400).json({ error: 'Missing expense ID' });
+      }
+
+      const expensesCollection = await dbClient.getExpensesCollection();
+      const result = await expensesCollection.deleteOne({
+        _id: new ObjectId(id),
+        userId: req.user._id,
+      });
+
+      if (result.deletedCount === 0) {
+        return res.status(404).json({ error: 'Expense not found' });
+      }
+
+      return res.status(200).json({ message: 'Expense deleted successfully' });
+    } catch (err) {
+      console.error('Error deleting expense:', err);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+
+  /**
+   * Method to get expenses by Category and its sum
+   * per give period
+   */
+  static async getExpenseAnalytics(req, res) {
+    try {
+      const { startDate, endDate, categoryId } = req.query;
+      const expensesCollection = await dbClient.getExpensesCollection();
+
+      let matchQuery = { userId: req.user._id };
+      if (startDate && endDate) {
+        matchQuery.date = { $gte: new Date(startDate), $lte: new Date(endDate) };
+      }
+      if (categoryId) {
+        matchQuery.categoryId = new ObjectId(categoryId);
+      }
+
+      const pipeline = [
+        { $match: matchQuery },
+        {
+          $group: {
+            _id: {
+              date: { $dateToString: { format: '%Y-%m-%d', date: '$date' } },
+              categoryId: '$categoryId',
+            },
+            totalAmount: { $sum: '$amount' },
+            count: { $sum: 1 },
+          },
+        },
+        { $sort: { '_id.date': 1 } },
+      ];
+
+      const analytics = await expensesCollection.aggregate(pipeline).toArray();
+      return res.status(200).json({ analytics });
+    } catch (error) {
+      console.error('Error getting expenses analytics:', error);
       return res.status(500).json({ error: 'Internal server error' });
     }
   }

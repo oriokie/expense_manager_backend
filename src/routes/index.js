@@ -36,5 +36,11 @@ router.put('/categories/:id', AuthMiddleware.authenticateToken, CategoryControll
 router.post('/expenses', AuthMiddleware.authenticateToken, ExpenseController.addExpense);
 router.get('/expenses', AuthMiddleware.authenticateToken, ExpenseController.getExpenses);
 router.put('/expenses/:id', AuthMiddleware.authenticateToken, ExpenseController.updateExpense);
+router.delete('/expenses/:id', AuthMiddleware.authenticateToken, ExpenseController.deleteExpense);
+router.get(
+  '/expenses/analytics',
+  AuthMiddleware.authenticateToken,
+  ExpenseController.getExpenseAnalytics
+);
 
 module.exports = router;
