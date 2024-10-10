@@ -1,24 +1,38 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { getExpenseAnalytics, getMonthlyExpenses } from '../store/expenseSlice';
+import ExpenseAnalytics from '../components/Expenses/ExpenseAnalytics';
 
-const HomePage = () => {
-  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
+const AnalyticsPage = () => {
+  const dispatch = useDispatch();
+  const [year, setYear] = useState(new Date().getFullYear());
+  const { analytics, monthlyExpenses, loading } = useSelector((state) => state.expenses);
+
+  useEffect(() => {
+    dispatch(getExpenseAnalytics());
+    dispatch(getMonthlyExpenses(year));
+  }, [dispatch, year]);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
   return (
-    <div className='home-page'>
-      <h1>Welcome to Expense Manager</h1>
-      <p>Keep track of your expenses and manage your finances efficiently.</p>
-      {!isAuthenticated ? (
-        <div>
-          <Link to='/login'>Login</Link>
-          <Link to='/register'>Register</Link>
-        </div>
-      ) : (
-        <Link to='/dashboard'>Go to Dashboard</Link>
-      )}
+    <div className='analytics-page'>
+      <h1>Expense Analytics</h1>
+      <select onChange={(e) => setYear(parseInt(e.target.value))} value={year}>
+        {[...Array(5)].map((_, i) => {
+          const yearOption = new Date().getFullYear() - i;
+          return (
+            <option key={yearOption} value={yearOption}>
+              {yearOption}
+            </option>
+          );
+        })}
+      </select>
+      <ExpenseAnalytics analytics={analytics} monthlyExpenses={monthlyExpenses} />
     </div>
   );
 };
 
-export default HomePage;
+export default AnalyticsPage;
