@@ -9,7 +9,9 @@ const config = {
 
 // Determine the current environment
 const env = process.env.NODE_ENV || 'production'; // Default to 'development'
-API_URL = config[env].BACK_API_URL;
+
+API_URL = 'https://api.oriokie.tech';
+// API_URL = 'http://localhost:8080'
 
 async function apiRequest(endpoint, method = 'GET', body = null) {
   const token = localStorage.getItem('token');
