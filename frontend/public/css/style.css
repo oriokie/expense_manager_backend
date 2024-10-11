@@ -35,21 +35,6 @@ nav h1 {
   margin: 0;
 }
 
-button {
-  background-color: var(--secondary-color);
-  color: white;
-  border: none;
-  padding: 10px 15px;
-  margin: 5px;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-button:hover {
-  background-color: #27ae60;
-}
-
 input,
 select {
   width: 100%;
@@ -133,4 +118,55 @@ canvas {
 
 #categoryList button:hover {
   background-color: #ff6b6b;
+}
+
+.card {
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+#categoryList {
+  list-style-type: none;
+  padding: 0;
+}
+
+#categoryList li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+#categoryList li:last-child {
+  border-bottom: none;
+}
+
+button {
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 14px;
+  margin: 4px 2px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+button:hover {
+  background-color: #45a049;
+}
+
+button[onclick*='deleteCategory'] {
+  background-color: #f44336;
+}
+
+button[onclick*='deleteCategory']:hover {
+  background-color: #d32f2f;
 }

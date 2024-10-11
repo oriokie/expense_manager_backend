@@ -1,17 +1,26 @@
 async function showCategories() {
-  try {
-    const data = await apiRequest('/categories');
-    const content = document.getElementById('content');
+  await loadCategories();
+  const content = document.getElementById('content');
+
+  if (Object.keys(categoriesMap).length === 0) {
+    content.innerHTML = `
+            <div class="card">
+                <h2>Categories</h2>
+                <p>No categories available.</p>
+                <button onclick="seedCategories()">Seed Categories</button>
+            </div>
+        `;
+  } else {
     content.innerHTML = `
             <div class="card">
                 <h2>Categories</h2>
                 <ul id="categoryList">
-                    ${data.categories
+                    ${Object.entries(categoriesMap)
                       .map(
-                        (category) => `
+                        ([id, name]) => `
                         <li>
-                            ${category.name}: ${category.description}
-                            <button onclick="deleteCategory('${category._id}')">Delete</button>
+                            ${name}
+                            <button onclick="deleteCategory('${id}')">Delete</button>
                         </li>
                     `
                       )
@@ -20,24 +29,32 @@ async function showCategories() {
                 <button onclick="showAddCategoryForm()">Add Category</button>
             </div>
         `;
+  }
+}
+
+async function seedCategories() {
+  try {
+    await apiRequest('/categories/seed', 'POST');
+    alert('Categories seeded successfully!');
+    await showCategories();
   } catch (error) {
-    console.error('Error:', error);
-    alert('Failed to fetch categories. Please try again.');
+    console.error('Error seeding categories:', error);
+    alert('Failed to seed categories. Please try again.');
   }
 }
 
 async function showAddCategoryForm() {
   const content = document.getElementById('content');
   content.innerHTML = `
-        <div class="card">
-            <h2>Add Category</h2>
-            <form onsubmit="addCategory(event)">
-                <input type="text" id="categoryName" placeholder="Name" required>
-                <input type="text" id="categoryDescription" placeholder="Description" required>
-                <button type="submit">Add Category</button>
-            </form>
-        </div>
-    `;
+          <div class="card">
+              <h2>Add Category</h2>
+              <form onsubmit="addCategory(event)">
+                  <input type="text" id="categoryName" placeholder="Name" required>
+                  <input type="text" id="categoryDescription" placeholder="Description" required>
+                  <button type="submit">Add Category</button>
+              </form>
+          </div>
+      `;
 }
 
 async function addCategory(event) {
@@ -48,8 +65,7 @@ async function addCategory(event) {
   try {
     await apiRequest('/categories', 'POST', { name, description });
     alert('Category added successfully!');
-    await loadCategories(); // Reload categories after adding a new one
-    showCategories();
+    await showCategories();
   } catch (error) {
     console.error('Error:', error);
     alert('Failed to add category. Please try again.');
@@ -77,7 +93,7 @@ async function deleteCategory(categoryId) {
     try {
       await apiRequest(`/categories/${categoryId}`, 'DELETE');
       alert('Category deleted successfully.');
-      showCategories(); // Refresh the category list
+      await showCategories();
     } catch (error) {
       console.error('Error:', error);
       alert('Failed to delete category. Please try again.');

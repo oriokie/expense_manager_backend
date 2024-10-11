@@ -1,3 +1,5 @@
+let monthlyExpenseChart = null;
+let categoryExpenseChart = null;
 let categoriesMap = {};
 
 async function loadCategories() {
@@ -11,6 +13,10 @@ async function loadCategories() {
   } catch (error) {
     console.error('Error loading categories:', error);
   }
+}
+
+function getCategoryName(categoryId) {
+  return categoriesMap[categoryId] || 'Uncategorized';
 }
 
 async function showExpenses() {
@@ -77,6 +83,7 @@ async function addExpense(event) {
 }
 
 async function showExpenseAnalysis() {
+  await loadCategories(); // Make sure categories are loaded
   const content = document.getElementById('content');
   content.innerHTML = `
         <div class="card">
@@ -86,6 +93,13 @@ async function showExpenseAnalysis() {
                 <input type="date" id="endDate">
                 <select id="categoryFilter">
                     <option value="">All Categories</option>
+                    ${Object.entries(categoriesMap)
+                      .map(
+                        ([id, name]) => `
+                        <option value="${id}">${name}</option>
+                    `
+                      )
+                      .join('')}
                 </select>
                 <button onclick="filterExpenses()">Filter</button>
             </div>
@@ -94,8 +108,6 @@ async function showExpenseAnalysis() {
             <canvas id="categoryExpenseChart"></canvas>
         </div>
     `;
-  await loadCategories();
-  populateCategoryFilter();
   await filterExpenses();
 }
 
@@ -145,7 +157,7 @@ function displayExpenses(expenses) {
                 <li>
                     ${expense.description}: $${expense.amount}
                     (${new Date(expense.date).toLocaleDateString()})
-                    - ${getCategoryName(expense)}
+                    - ${getCategoryName(expense.categoryId)}
                 </li>
             `
               )
@@ -154,19 +166,23 @@ function displayExpenses(expenses) {
     `;
 }
 
-function getCategoryName(categoryId) {
-  return categoriesMap[categoryId] || 'Uncategorized';
-}
-
 function updateMonthlyExpenseChart(expenses) {
   const monthlyData = {};
   expenses.forEach((expense) => {
-    const month = new Date(expense.date).toLocaleString('default', { month: 'long' });
+    const month = new Date(expense.date).toLocaleString('default', {
+      month: 'long',
+      year: 'numeric',
+    });
     monthlyData[month] = (monthlyData[month] || 0) + expense.amount;
   });
 
   const ctx = document.getElementById('monthlyExpenseChart').getContext('2d');
-  new Chart(ctx, {
+
+  if (monthlyExpenseChart) {
+    monthlyExpenseChart.destroy();
+  }
+
+  monthlyExpenseChart = new Chart(ctx, {
     type: 'bar',
     data: {
       labels: Object.keys(monthlyData),
@@ -189,6 +205,7 @@ function updateMonthlyExpenseChart(expenses) {
     },
   });
 }
+
 function updateCategoryExpenseChart(expenses) {
   const categoryData = {};
   expenses.forEach((expense) => {
@@ -197,7 +214,12 @@ function updateCategoryExpenseChart(expenses) {
   });
 
   const ctx = document.getElementById('categoryExpenseChart').getContext('2d');
-  new Chart(ctx, {
+
+  if (categoryExpenseChart) {
+    categoryExpenseChart.destroy();
+  }
+
+  categoryExpenseChart = new Chart(ctx, {
     type: 'pie',
     data: {
       labels: Object.keys(categoryData),
@@ -228,3 +250,7 @@ function updateCategoryExpenseChart(expenses) {
     },
   });
 }
+
+// Make sure to export or make globally available the functions that are called from HTML
+window.filterExpenses = filterExpenses;
+window.showExpenseAnalysis = showExpenseAnalysis;
