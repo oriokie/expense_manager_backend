@@ -23,9 +23,11 @@ app.use(limiter);
 app.options('*', cors()); // handle preflight requests
 
 // CORS configuration
+const allowedOrigins = [process.env.FRONTEND_URL, 'http://localhost:3000'];
+
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000', // Your frontend URL
+    origin: allowedOrigins, // Your frontend URL
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
