@@ -26,18 +26,30 @@ async function showExpenses() {
     content.innerHTML = `
             <div class="card">
                 <h2>Expenses</h2>
-                <ul>
-                    ${data.expenses
-                      .map(
-                        (expense) => `
-                        <li>
-                            ${expense.description}: $${expense.amount}
-                            (${new Date(expense.date).toLocaleDateString()})
-                        </li>
-                    `
-                      )
-                      .join('')}
-                </ul>
+                <table class="expense-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Date</th>
+                            <th>Description</th>
+                            <th>Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${data.expenses
+                          .map(
+                            (expense, index) => `
+                            <tr>
+                                <td>${index + 1}</td>
+                                <td>${new Date(expense.date).toLocaleDateString()}</td>
+                                <td>${expense.description}</td>
+                                <td>$${expense.amount.toFixed(2)}</td>
+                            </tr>
+                        `
+                          )
+                          .join('')}
+                    </tbody>
+                </table>
             </div>
         `;
   } catch (error) {
@@ -254,3 +266,4 @@ function updateCategoryExpenseChart(expenses) {
 // Make sure to export or make globally available the functions that are called from HTML
 window.filterExpenses = filterExpenses;
 window.showExpenseAnalysis = showExpenseAnalysis;
+window.showExpenses = showExpenses;

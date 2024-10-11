@@ -3,7 +3,6 @@
  */
 const express = require('express');
 const cors = require('cors');
-const compression = require('compression');
 const rateLimit = require('express-rate-limit');
 const routes = require('./routes');
 require('dotenv').config();
@@ -12,9 +11,6 @@ const app = express();
 
 // Increase the maximum number of listeners
 require('events').EventEmitter.defaultMaxListeners = 15;
-
-// Use compression middleware
-app.use(compression());
 
 // Implement rate limiting
 const limiter = rateLimit({
