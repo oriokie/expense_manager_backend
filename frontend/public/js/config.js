@@ -8,7 +8,7 @@ const config = {
 };
 
 // Determine the current environment
-const env = process.env.NODE_ENV || 'development'; // Default to 'development'
+const env = process.env.NODE_ENV || 'production'; // Default to 'development'
 export const API_URL = config[env].BACK_API_URL;
 
 module.exports = { API_URL };
