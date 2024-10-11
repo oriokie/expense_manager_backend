@@ -2,15 +2,52 @@
  * Entry point of the application
  */
 const express = require('express');
+const cors = require('cors');
+const compression = require('compression');
+const rateLimit = require('express-rate-limit');
 const routes = require('./routes');
 require('dotenv').config();
 
 const app = express();
 
-const PORT = process.env.PORT || 8080;
+// Increase the maximum number of listeners
+require('events').EventEmitter.defaultMaxListeners = 15;
+
+// Use compression middleware
+app.use(compression());
+
+// Implement rate limiting
+const limiter = rateLimit({
+  windowMs: 1 * 60 * 1000, // 1 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+  message: 'Too many requests from this IP, please try again after 15 minutes',
+  skip: (req) => req.method === 'OPTIONS', // Skip OPTIONS requests
+});
+app.use(limiter);
+app.options('*', cors()); // handle preflight requests
+
+// CORS configuration
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL || 'http://localhost:3000', // Your frontend URL
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true,
+  })
+);
 
 app.use(express.json());
+
+// Use routes
 app.use('/', routes);
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ error: 'Internal Server Error' });
+});
+
+const PORT = process.env.PORT || 8080;
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

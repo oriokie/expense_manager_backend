@@ -48,7 +48,10 @@ class AuthController {
 
     await usersCollection.insertOne(user);
 
-    return res.status(201).json({ userId, name, email, createdAt: user.createdAt });
+    const token = crypto.randomBytes(16).toString('hex');
+    await redisClient.set(`auth_${token}`, user._id.toString(), 86400);
+
+    return res.status(201).json({ userId, name, email, createdAt: user.createdAt, token });
   }
 
   /**
