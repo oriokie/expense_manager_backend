@@ -1,15 +1,3 @@
-const config = {
-  development: {
-    BACK_API_URL: 'http://localhost:8080',
-  },
-  production: {
-    BACK_API_URL: 'https://api.oriokie.tech',
-  },
-};
-
-// Determine the current environment
-const env = process.env.NODE_ENV || 'production'; // Default to 'development'
-
 API_URL = 'https://api.oriokie.tech';
 // API_URL = 'http://localhost:8080'
 
