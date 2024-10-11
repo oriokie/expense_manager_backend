@@ -23,7 +23,7 @@ app.use(limiter);
 app.options('*', cors()); // handle preflight requests
 
 // CORS configuration
-const allowedOrigins = [process.env.FRONTEND_URL, 'http://localhost:3000'];
+const allowedOrigins = [process.env.FRONTEND_URL, 'https://oriokie.tech', 'http://localhost:3000'];
 
 app.use(
   cors({
