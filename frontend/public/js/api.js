@@ -1,4 +1,4 @@
-const { API_URL } = require('./config.js');
+import { API_URL } from './config.js';
 
 async function apiRequest(endpoint, method = 'GET', body = null) {
   const token = localStorage.getItem('token');
