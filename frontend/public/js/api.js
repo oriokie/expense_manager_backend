@@ -1,4 +1,15 @@
-import { API_URL } from './config.js';
+const config = {
+  development: {
+    BACK_API_URL: 'http://localhost:8080',
+  },
+  production: {
+    BACK_API_URL: 'https://api.oriokie.tech',
+  },
+};
+
+// Determine the current environment
+const env = process.env.NODE_ENV || 'production'; // Default to 'development'
+API_URL = config[env].BACK_API_URL;
 
 async function apiRequest(endpoint, method = 'GET', body = null) {
   const token = localStorage.getItem('token');
