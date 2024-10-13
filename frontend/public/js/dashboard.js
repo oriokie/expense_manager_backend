@@ -18,85 +18,70 @@ async function showDashboard() {
     const summaryHtml = generateExpenseSummaryHtml(summaryData);
 
     content.innerHTML = `
-      <div class="row">
-        <div class="col-md-8">
-          <!-- Quick Actions Card -->
-          <div class="card mb-3">
-            <div class="card-body">
-              <h2 class="card-title">Quick Actions</h2>
-              <button onclick="showAddExpenseForm()" class="btn btn-primary me-2">Add Expense</button>
-              <button onclick="showAddCategoryForm()" class="btn btn-secondary me-2">Add Category</button>
-              <button onclick="showExpenseAnalysis()" class="btn btn-info">Expense Analysis</button>
-            </div>
-          </div>
-          
-          <!-- Expense Summary Card -->
-          ${summaryHtml}
-
-          <!-- Monthly Expenses Chart -->
-          <div class="card mb-3">
-            <div class="card-body">
-              <h2 class="card-title">Monthly Expenses</h2>
-              <canvas id="expenseChart"></canvas>
-            </div>
-          </div>
-
-          <!-- Category Breakdown Chart -->
-          <div class="card mb-3">
-            <div class="card-body">
-              <h2 class="card-title">Category Breakdown</h2>
-              <canvas id="categoryChart"></canvas>
-            </div>
-          </div>
-        </div>
-
-        <!-- Recommendations Card -->
-        <div class="col-md-4">
-          ${recommendationsHtml}
+  <div class="row">
+    <div class="col-md-8">
+      <div class="card mb-3">
+        <div class="card-body">
+          <h2 class="card-title">Quick Actions</h2>
+          <button onclick="showAddExpenseForm()" class="btn btn-primary me-2">Add Expense</button>
+          <button onclick="showAddCategoryForm()" class="btn btn-secondary me-2">Add Category</button>
+          <button onclick="showExpenseAnalysis()" class="btn btn-info">Expense Analysis</button>
         </div>
       </div>
+      ${summaryHtml}
+      <div class="card mb-3">
+        <div class="card-body">
+          <h2 class="card-title">Monthly Expenses</h2>
+          <canvas id="expenseChart"></canvas>
+        </div>
+      </div>
+      <div class="card mb-3">
+        <div class="card-body">
+          <h2 class="card-title">Category Breakdown</h2>
+          <canvas id="categoryChart"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      ${recommendationsHtml}
 
-      <!-- Insights Section -->
-      <div class="row mt-4">
-        <div class="col-md-4 mb-3">
-          <div class="card">
-            <div class="card-body">
-              <h5 class="card-title">Top Spending Categories</h5>
-              <ul class="list-group" id="topSpendingList">
-                <!-- Populated by JavaScript -->
-              </ul>
-            </div>
-          </div>
+      <!-- Move the insights section to the right column -->
+      <div class="card mb-3">
+        <div class="card-body">
+          <h5 class="card-title">Top Spending Categories</h5>
+          <ul class="list-group" id="topSpendingList">
+            <!-- This will be populated by JavaScript -->
+          </ul>
         </div>
-        
-        <div class="col-md-4 mb-3">
-          <div class="card">
-            <div class="card-body">
-              <h5 class="card-title">Unusual Spending Alert</h5>
-              <div id="unusualSpendingAlert">
-                <!-- Populated by JavaScript -->
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <div class="col-md-4 mb-3">
-          <div class="card">
-            <div class="card-body">
-              <h5 class="card-title">Next Month Forecast</h5>
-              <p class="h3 text-center" id="expenseForecast"></p>
-              <p class="text-muted text-center">Based on last 3 months average</p>
-            </div>
+      </div>
+      <div class="card mb-3">
+        <div class="card-body">
+          <h5 class="card-title">Unusual Spending Alert</h5>
+          <div id="unusualSpendingAlert">
+            <!-- This will be populated by JavaScript -->
           </div>
         </div>
       </div>
-    `;
+      <div class="card mb-3">
+        <div class="card-body">
+          <h5 class="card-title">Next Month Forecast</h5>
+          <p class="h3 text-center" id="expenseForecast"></p>
+          <p class="text-muted text-center">Based on last 3 months average</p>
+        </div>
+      </div>
+    </div>
+  </div>
+`;
+
+    const currentYear = new Date().getFullYear();
+    const expensesThisYear = filterExpensesByYear(expensesData.expenses);
+    const expensesThisMonth = filterExpensesByMonth(expensesData.expenses);
 
     await loadExpenseChart(monthlyData);
-    await loadCategoryChart(expensesData.expenses);
-    populateTopSpendingCategories(expensesData.expenses, categoriesData.categories);
+    await loadCategoryChart(expensesThisYear);
+    populateTopSpendingCategories(expensesThisYear, categoriesData.categories);
     detectUnusualSpending(
-      expensesData.expenses,
+      expensesThisMonth,
       categoriesData.categories,
       recommendationsData.recommendations
     );
@@ -323,6 +308,24 @@ async function loadCategoryChart(expenses) {
   });
 }
 
+function filterExpensesByYear(expenses, year = new Date().getFullYear()) {
+  return expenses.filter((expense) => {
+    const expenseDate = new Date(expense.date);
+    return expenseDate.getFullYear() === year;
+  });
+}
+
+function filterExpensesByMonth(
+  expenses,
+  month = new Date().getMonth(),
+  year = new Date().getFullYear()
+) {
+  return expenses.filter((expense) => {
+    const expenseDate = new Date(expense.date);
+    return expenseDate.getMonth() === month && expenseDate.getFullYear() === year;
+  });
+}
+
 function populateTopSpendingCategories(expenses, categories) {
   const categoryTotals = {};
   expenses.forEach((expense) => {
@@ -365,7 +368,7 @@ function detectUnusualSpending(expenses, categories, recommendations) {
           .map(
             (category) => `
           <li class="list-group-item text-danger">
-            ${category.name}: Over budget
+            ${category.name}: Above by ${category.trend.toFixed(2)}%
           </li>
         `
           )
