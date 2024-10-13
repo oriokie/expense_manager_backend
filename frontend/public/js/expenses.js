@@ -341,7 +341,7 @@ function updateCategoryExpenseChart(expenses) {
 }
 async function showExpenses() {
   try {
-    await loadCategories(); // Ensure categories are loaded
+    await loadCategories();
     const data = await apiRequest('/expenses');
     const content = document.getElementById('content');
 
@@ -394,6 +394,7 @@ async function showExpenses() {
                 <th>Description</th>
                 <th>Amount</th>
                 <th>Category</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody id="expenseTableBody">
@@ -441,10 +442,30 @@ function generateExpenseTableRows(expenses) {
         <td>${expense.description}</td>
         <td>$${expense.amount.toFixed(2)}</td>
         <td>${getCategoryName(expense.categoryId)}</td>
+        <td>
+          <button onclick="deleteExpense('${
+            expense._id
+          }')" class="btn btn-danger btn-sm">Delete</button>
+        </td>
       </tr>
     `
     )
     .join('');
+}
+
+async function deleteExpense(expenseId) {
+  if (!confirm('Are you sure you want to delete this expense?')) {
+    return;
+  }
+
+  try {
+    await apiRequest(`/expenses/${expenseId}`, 'DELETE');
+    alert('Expense deleted successfully!');
+    await showExpenses();
+  } catch (error) {
+    console.error('Error deleting expense:', error);
+    alert('Failed to delete expense. Please try again.');
+  }
 }
 
 function calculatePercentageChange(oldValue, newValue) {
