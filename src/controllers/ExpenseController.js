@@ -287,7 +287,7 @@ class ExpenseController {
       const endDate = new Date('2024-10-10');
 
       // Generate random expenses for each month of 2023
-      for (let month = 0; month < 18; month++) {
+      for (let month = 0; month < 22; month++) {
         const numExpenses = Math.floor(Math.random() * 5) + 5; // 5 to 9 expenses per month
         for (let i = 0; i < numExpenses; i++) {
           const randomCategory = categories[Math.floor(Math.random() * categories.length)];
