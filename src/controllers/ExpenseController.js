@@ -262,6 +262,59 @@ class ExpenseController {
       return res.status(500).json({ error: 'Internal server error' });
     }
   }
+
+  static async seedExpenses(req, res) {
+    try {
+      const expensesCollection = await dbClient.getExpensesCollection();
+      const categoriesCollection = await dbClient.getCategoriesCollection();
+
+      // Check if expenses already exist
+      const existingExpenses = await expensesCollection.findOne({ userId: req.user._id });
+      if (existingExpenses) {
+        return res.status(400).json({ error: 'Expenses already exist' });
+      }
+
+      // Get categories for the user
+      const categories = await categoriesCollection.find({ userId: req.user._id }).toArray();
+      if (categories.length === 0) {
+        return res
+          .status(400)
+          .json({ error: 'No categories found. Please seed categories first.' });
+      }
+
+      const expensesToSeed = [];
+      const startDate = new Date('2023-01-01');
+      const endDate = new Date('2023-12-31');
+
+      // Generate random expenses for each month of 2023
+      for (let month = 0; month < 12; month++) {
+        const numExpenses = Math.floor(Math.random() * 5) + 5; // 5 to 9 expenses per month
+        for (let i = 0; i < numExpenses; i++) {
+          const randomCategory = categories[Math.floor(Math.random() * categories.length)];
+          const randomDate = new Date(2023, month, Math.floor(Math.random() * 28) + 1);
+
+          expensesToSeed.push({
+            userId: req.user._id,
+            amount: parseFloat((Math.random() * 200 + 10).toFixed(2)), // Random amount between 10 and 210
+            description: `Seeded expense ${i + 1} for ${randomCategory.name}`,
+            date: randomDate,
+            categoryId: randomCategory._id,
+            createdAt: new Date(),
+          });
+        }
+      }
+
+      // Insert the seeded expenses
+      await expensesCollection.insertMany(expensesToSeed);
+
+      return res
+        .status(201)
+        .json({ message: 'Expenses seeded successfully', count: expensesToSeed.length });
+    } catch (error) {
+      console.error('Error seeding expenses:', error);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+  }
 }
 
 module.exports = ExpenseController;

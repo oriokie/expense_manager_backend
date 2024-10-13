@@ -14,13 +14,13 @@ class CategoryController {
     { name: 'Food', description: 'Expenses related to food and dining.' },
     { name: 'Transportation', description: 'Expenses related to transport.' },
     { name: 'Housing', description: 'Expenses for housing or rent.' },
-    //{ name: 'Utilities', description: 'Expenses for utilities such as water and electricity' },
-    //{ name: 'Health', description: 'Medical expenses and health-related costs.' },
-    //{ name: 'Entertainment', description: 'Expenses for entertainment and leisure' },
-    //{ name: 'Groceries', description: 'Expenses for purchasing groceries.' },
-    //{ name: 'Education', description: 'Expenses for educational purposes.' },
-    //{ name: 'Clothing', description: 'Expenses for clothing and personal items.' },
-    //{ name: 'Miscellaneous', description: 'Other miscellaneous expenses.' },
+    { name: 'Utilities', description: 'Expenses for utilities such as water and electricity' },
+    { name: 'Health', description: 'Medical expenses and health-related costs.' },
+    { name: 'Entertainment', description: 'Expenses for entertainment and leisure' },
+    { name: 'Groceries', description: 'Expenses for purchasing groceries.' },
+    { name: 'Education', description: 'Expenses for educational purposes.' },
+    { name: 'Clothing', description: 'Expenses for clothing and personal items.' },
+    { name: 'Miscellaneous', description: 'Other miscellaneous expenses.' },
   ];
 
   /**
