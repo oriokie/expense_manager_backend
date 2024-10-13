@@ -48,5 +48,6 @@ router.get(
   AuthMiddleware.authenticateToken,
   ExpenseController.getMonthlyExpenses
 );
+router.post('/expenses/seed', AuthMiddleware.authenticateToken, ExpenseController.seedExpenses);
 
 module.exports = router;

@@ -284,7 +284,7 @@ class ExpenseController {
 
       const expensesToSeed = [];
       const startDate = new Date('2023-01-01');
-      const endDate = new Date('2023-12-31');
+      const endDate = new Date('2024-10-10');
 
       // Generate random expenses for each month of 2023
       for (let month = 0; month < 12; month++) {

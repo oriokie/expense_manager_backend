@@ -19,6 +19,17 @@ function getCategoryName(categoryId) {
   return categoriesMap[categoryId] || 'Uncategorized';
 }
 
+async function seedExpenses() {
+  try {
+    const response = await apiRequest('/expenses/seed', 'POST');
+    alert('Expenses seeded successfully!');
+    await showExpenses();
+  } catch (error) {
+    console.error('Error seeding expenses:', error);
+    alert('Failed to seed expenses. Please try again.');
+  }
+}
+
 async function showExpenses() {
   try {
     const data = await apiRequest('/expenses');
