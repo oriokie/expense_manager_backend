@@ -221,3 +221,8 @@ button[onclick*='deleteCategory']:hover {
 .decrease {
   color: #388e3c;
 }
+
+.text-black {
+  color: black;
+  margin-right: 10px; /* Adjust as needed */
+}

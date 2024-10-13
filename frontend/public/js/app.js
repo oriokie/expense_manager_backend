@@ -1,14 +1,18 @@
 function updateNav() {
   const navButtons = document.getElementById('nav-buttons');
   const token = localStorage.getItem('token');
-  if (token) {
+  const user = JSON.parse(localStorage.getItem('user'));
+  if (token && user) {
     navButtons.innerHTML = `
-            <button onclick="showDashboard()">Dashboard</button>
-            <button onclick="showExpenses()">Expenses</button>
-            <button onclick="showCategories()">Categories</button>
-            <button onclick="showExpenseAnalysis()">Expense Analysis</button>
-            <button onclick="logout()">Logout</button>
-        `;
+      <div class="d-flex align-items-center">
+        <span class="text-black me-2">Welcome, ${user.name}</span>
+        <button onclick="showDashboard()">Dashboard</button>
+        <button onclick="showExpenses()">Expenses</button>
+        <button onclick="showCategories()">Categories</button>
+        <button onclick="showExpenseAnalysis()">Expense Analysis</button>
+        <button onclick="logout()">Logout</button>
+      </div>
+    `;
   } else {
     navButtons.innerHTML = `
             <button onclick="showLoginForm()">Login</button>

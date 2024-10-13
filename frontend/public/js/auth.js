@@ -35,6 +35,8 @@ async function login(event) {
   try {
     const data = await apiRequest('/login', 'POST', { email, password });
     localStorage.setItem('token', data.token);
+    localStorage.setItem('user', JSON.stringify(data.user));
+    updateNav();
     showDashboard();
   } catch (error) {
     console.error('Error:', error);
@@ -60,6 +62,7 @@ async function register(event) {
 
 function logout() {
   localStorage.removeItem('token');
+  localStorage.removeItem('user');
   updateNav();
   showLoginForm();
 }

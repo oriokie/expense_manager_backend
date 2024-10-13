@@ -63,7 +63,13 @@ class AuthController {
   static async login(req, res) {
     const token = crypto.randomBytes(16).toString('hex');
     await redisClient.set(`auth_${token}`, req.user._id.toString(), 86400);
-    res.json({ token });
+
+    const user = {
+      userId: req.user._id,
+      name: req.user.name,
+      email: req.user.email,
+    };
+    res.json({ token, user });
   }
 
   /**
