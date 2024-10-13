@@ -287,7 +287,7 @@ class ExpenseController {
       const endDate = new Date('2024-10-10');
 
       // Generate random expenses for each month of 2023
-      for (let month = 0; month < 12; month++) {
+      for (let month = 0; month < 18; month++) {
         const numExpenses = Math.floor(Math.random() * 5) + 5; // 5 to 9 expenses per month
         for (let i = 0; i < numExpenses; i++) {
           const randomCategory = categories[Math.floor(Math.random() * categories.length)];
@@ -295,8 +295,8 @@ class ExpenseController {
 
           expensesToSeed.push({
             userId: req.user._id,
-            amount: parseFloat((Math.random() * 200 + 10).toFixed(2)), // Random amount between 10 and 210
-            description: `Seeded expense ${i + 1} for ${randomCategory.name}`,
+            amount: parseFloat((Math.random() * 2000 + 100).toFixed(2)), // Random amount between 10 and 210
+            description: `Template expense ${i + 1} for ${randomCategory.name}`,
             date: randomDate,
             categoryId: randomCategory._id,
             createdAt: new Date(),
@@ -314,6 +314,66 @@ class ExpenseController {
       console.error('Error seeding expenses:', error);
       return res.status(500).json({ error: 'Internal server error' });
     }
+  }
+
+  static async getExpenseSummary(req, res) {
+    try {
+      const userId = new ObjectId(req.user._id);
+      const now = new Date();
+      const currentYear = now.getFullYear();
+      const currentMonth = now.getMonth();
+
+      const expensesCollection = await dbClient.getExpensesCollection();
+
+      const currentMonthTotal = await ExpenseController.getTotalExpenses(
+        expensesCollection,
+        userId,
+        currentYear,
+        currentMonth
+      );
+      const previousMonthTotal = await ExpenseController.getTotalExpenses(
+        expensesCollection,
+        userId,
+        currentMonth === 0 ? currentYear - 1 : currentYear,
+        currentMonth === 0 ? 11 : currentMonth - 1
+      );
+      const currentYearTotal = await ExpenseController.getTotalExpenses(
+        expensesCollection,
+        userId,
+        currentYear
+      );
+      const previousYearTotal = await ExpenseController.getTotalExpenses(
+        expensesCollection,
+        userId,
+        currentYear - 1
+      );
+
+      res.json({
+        currentMonthTotal,
+        previousMonthTotal,
+        currentYearTotal,
+        previousYearTotal,
+      });
+    } catch (error) {
+      console.error('Error getting expense summary:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+
+  static async getTotalExpenses(collection, userId, year, month = null) {
+    const matchStage = {
+      userId: userId,
+      date: {
+        $gte: new Date(year, month || 0, 1),
+        $lt: month !== null ? new Date(year, month + 1, 1) : new Date(year + 1, 0, 1),
+      },
+    };
+
+    const result = await collection
+      .aggregate([{ $match: matchStage }, { $group: { _id: null, total: { $sum: '$amount' } } }])
+      .toArray();
+
+    return result.length > 0 ? result[0].total : 0;
   }
 }
 
