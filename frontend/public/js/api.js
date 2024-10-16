@@ -1,5 +1,5 @@
-API_URL = 'https://api.oriokie.tech';
-//API_URL = 'http://localhost:8080';
+// API_URL = 'https://api.oriokie.tech';
+API_URL = 'http://localhost:8080';
 
 async function apiRequest(endpoint, method = 'GET', body = null) {
   const token = localStorage.getItem('token');

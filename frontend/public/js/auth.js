@@ -53,6 +53,15 @@ async function register(event) {
   try {
     const data = await apiRequest('/register', 'POST', { name, email, password });
     localStorage.setItem('token', data.token);
+    localStorage.setItem(
+      'user',
+      JSON.stringify({
+        userId: data.userId,
+        name: data.name,
+        email: data.email,
+      })
+    );
+    updateNav();
     showDashboard();
   } catch (error) {
     console.error('Error:', error);
