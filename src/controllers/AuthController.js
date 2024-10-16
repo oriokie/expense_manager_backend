@@ -6,6 +6,9 @@ const redisClient = require('../config/redis');
 const bcrypt = require('bcrypt');
 const { v4: uuidv4 } = require('uuid');
 const crypto = require('crypto');
+const jwt = require('jsonwebtoken');
+
+const JWT_SECRET = process.env.JWT_SECRET || 'Y1qfVwrNM1H/KEm17I8iDQbmAsPasL+v7HHuTDfr980=';
 
 /**
  * Class representing an authentication controller
@@ -48,7 +51,8 @@ class AuthController {
 
     await usersCollection.insertOne(user);
 
-    const token = crypto.randomBytes(16).toString('hex');
+    const token = jwt.sign({ userId, email }, JWT_SECRET, { expiresIn: '24h' });
+
     await redisClient.set(`auth_${token}`, user._id.toString(), 86400);
 
     return res.status(201).json({ userId, name, email, createdAt: user.createdAt, token });
@@ -61,7 +65,9 @@ class AuthController {
    * @return {Object} The response object
    */
   static async login(req, res) {
-    const token = crypto.randomBytes(16).toString('hex');
+    const token = jwt.sign({ userId: user.userId, email: user.email }, JWT_SECRET, {
+      expiresIn: '24h',
+    });
     await redisClient.set(`auth_${token}`, req.user._id.toString(), 86400);
 
     const user = {
