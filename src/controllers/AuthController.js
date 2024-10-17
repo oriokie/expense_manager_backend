@@ -65,7 +65,7 @@ class AuthController {
    * @return {Object} The response object
    */
   static async login(req, res) {
-    const token = jwt.sign({ userId: user.userId, email: user.email }, JWT_SECRET, {
+    const token = jwt.sign({ userId: req.user._id, email: req.user.email }, JWT_SECRET, {
       expiresIn: '24h',
     });
     await redisClient.set(`auth_${token}`, req.user._id.toString(), 86400);
